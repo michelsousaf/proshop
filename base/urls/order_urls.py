@@ -7,6 +7,8 @@ urlpatterns = [
     path('', views.getOrders, name='orders'),
     path('add/', views.addOrderItems, name='orders-add'),
     path('myorders/', views.getMyOrders, name='myorders'),
+    
+    path('vesselschedules/', views.getVesselSchedules, name='vesselschedules'),
 
     path('<str:pk>/deliver/', views.updateOrderToDelivered, name='order-delivered'),
 

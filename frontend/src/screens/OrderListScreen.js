@@ -1,27 +1,40 @@
 import React, { useState, useEffect } from "react";
 import { LinkContainer } from "react-router-bootstrap";
-import { Table, Button } from "react-bootstrap";
+import {
+  Table,
+  Button,
+  Row,
+  Col,
+  // Collapse,
+  Dropdown,
+  // Container,
+  // Form,
+} from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
 import { listOrders } from "../actions/orderActions";
-import PaginateGeneric from "../components/PaginateGeneric";
-import Pagination from "react-bootstrap/Pagination";
+import Page from "../components/Pages";
+import { ExportCSV } from "../components/exportToCSV";
+import OffCanvasExample from "../components/OffCanvasExample";
+// import { Offcanvas } from "react-bootstrap/Offcanvas";
 
 function OrderListScreen({ history }) {
   const dispatch = useDispatch();
 
-  const [currentPage, setCurrentPage] = useState(1);
+  // const [email, setEmail] = useState("");
+  // const [orderId, setOrderId] = useState("");
 
   const orderList = useSelector((state) => state.orderList);
   const {
     loading,
     error,
     orders,
-    pages,
+    // pages,
     page,
-    has_previous,
-    has_next,
+    // has_previous,
+    // has_next,
+    total_items,
   } = orderList;
 
   const userLogin = useSelector((state) => state.userLogin);
@@ -32,6 +45,7 @@ function OrderListScreen({ history }) {
   useEffect(() => {
     if (userInfo && userInfo.isAdmin) {
       dispatch(listOrders(keyword));
+      // dispatch(listVesselSchedules());
     } else {
       history.push("/login");
     }
@@ -44,16 +58,45 @@ function OrderListScreen({ history }) {
     history.push(`/admin/orderlist/?keyword=${keyword}&page=${pageNumber}`);
   }
 
+  // console.log("email", filters);
+
   return (
     <div>
-      <h1>Orders</h1>
+      {/* <OffCanvasExample /> */}
+      <Row className="align-items-center">
+        <Col>
+          <h1>Orders</h1>
+        </Col>
+
+        <Col className="text-right">
+          <Dropdown>
+            <Dropdown.Toggle variant="success" id="dropdown-basic">
+              Actions
+            </Dropdown.Toggle>
+
+            <Dropdown.Menu>
+              <ExportCSV csvData={orders} fileName={"orders"} />
+              <Dropdown.Item>Export With Filters</Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown>
+        </Col>
+      </Row>
+
       {loading ? (
         <Loader />
       ) : error ? (
         <Message variant="danger">{error}</Message>
       ) : (
         <div>
-          <Table striped bordered hover responsive className="table-sm">
+          <Table
+            filterable
+            filterBy={["id_", "isPaid"]}
+            striped
+            bordered
+            hover
+            responsive
+            className="table-sm"
+          >
             <thead>
               <tr>
                 <th>ID</th>
@@ -62,6 +105,7 @@ function OrderListScreen({ history }) {
                 <th>Total</th>
                 <th>PAID</th>
                 <th>DELIVERED</th>
+                <th></th>
                 <th></th>
               </tr>
             </thead>
@@ -97,39 +141,29 @@ function OrderListScreen({ history }) {
                       </Button>
                     </LinkContainer>
                   </td>
+                  <td>
+                    <i
+                      className="fas fa-edit"
+                      // onClick={() => setShow(true)}
+                    ></i>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </Table>
-          <Pagination>
-            <Pagination.First onClick={() => handlePageChange(1)} />
-            <Pagination.Prev
-              onClick={() => handlePageChange(Math.max(page - 1, 1))}
-              disabled={!has_previous}
+          {undefined === page ? (
+            <Loader />
+          ) : error ? (
+            <Message variant="danger">{error}</Message>
+          ) : (
+            <Page
+              className="pagination-bar"
+              currentPage={page}
+              totalCount={total_items}
+              pageSize={20}
+              onPageChange={(page) => handlePageChange(page)}
             />
-            {Array.from({ length: pages }, (_, i) => (
-              <Pagination.Item
-                key={i + 1}
-                active={i + 1 === page}
-                onClick={() => handlePageChange(i + 1)}
-              >
-                {i + 1}
-              </Pagination.Item>
-            ))}
-            <Pagination.Next
-              onClick={() => handlePageChange(Math.min(page + 1, pages))}
-              disabled={!has_next}
-            />
-            <Pagination.Last
-              onClick={() => handlePageChange(pages)}
-              disabled={!has_next}
-            />
-          </Pagination>
-          {/* <PaginateGeneric
-            pages={pages}
-            page={page}
-            navegation={"/admin/orderlist/"}
-          /> */}
+          )}
         </div>
       )}
     </div>

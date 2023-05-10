@@ -21,6 +21,9 @@ import {
   ORDER_DELIVER_SUCCESS,
   ORDER_DELIVER_FAIL,
   // ORDER_DELIVER_RESET,
+  VESSEL_SCHEDULE_FAIL,
+  VESSEL_SCHEDULE_SUCCESS,
+  VESSEL_SCHEDULE_REQUEST,
 } from "../constants/orderConstants";
 
 import { CART_CLEAR_ITEMS } from "../constants/cartConstants";
@@ -226,7 +229,6 @@ export const listOrders = (keyword = "") => async (dispatch, getState) => {
         Authorization: `Bearer ${userInfo.token}`,
       },
     };
-
     const { data } = await axios.get(`/api/orders${keyword}`, config);
 
     dispatch({
@@ -239,6 +241,45 @@ export const listOrders = (keyword = "") => async (dispatch, getState) => {
       payload:
         error.response && error.response.data.detail
           ? error.response.data.detail
+          : error.message,
+    });
+  }
+};
+
+export const listVesselSchedules = () => async (dispatch, getState) => {
+  try {
+    dispatch({
+      type: VESSEL_SCHEDULE_REQUEST,
+    });
+
+    const {
+      userLogin: { userInfo },
+    } = getState();
+
+    const config = {
+      headers: {
+        "Content-type": "application/json",
+        Authorization: `Bearer ${userInfo.token}`,
+      },
+    };
+    const { data } = await axios.get(`/api/orders/vesselschedules`, config);
+
+    dispatch({
+      type: VESSEL_SCHEDULE_SUCCESS,
+      payload: data,
+    });
+  } catch (error) {
+    // if (error.response && error.response.status === 400) {
+    //   console.log("error", error.message);
+    //   dispatch({ type: "FETCH_DATA_ERROR_400", payload: error.response.data });
+    // } else {
+    //   dispatch({ type: "FETCH_DATA_ERROR", payload: error.message });
+    // }
+    dispatch({
+      type: VESSEL_SCHEDULE_FAIL,
+      payload:
+        error.response && error.response.data.message
+          ? error.response.data.message
           : error.message,
     });
   }

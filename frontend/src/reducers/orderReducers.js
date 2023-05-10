@@ -21,7 +21,16 @@ import {
   ORDER_DELIVER_SUCCESS,
   ORDER_DELIVER_FAIL,
   ORDER_DELIVER_RESET,
+  VESSEL_SCHEDULE_FAIL,
+  VESSEL_SCHEDULE_SUCCESS,
+  VESSEL_SCHEDULE_REQUEST,
 } from "../constants/orderConstants";
+
+import {
+  EXPORT_EXCEL_START,
+  EXPORT_EXCEL_END,
+  EXPORT_EXCEL_ERROR,
+} from "../constants/exportConstants";
 
 export const orderCreateReducer = (state = {}, action) => {
   switch (action.type) {
@@ -175,12 +184,45 @@ export const orderListReducer = (state = { orders: [] }, action) => {
         orders: action.payload.orders,
         page: action.payload.page,
         pages: action.payload.pages,
+        has_next: action.payload.has_next,
+        has_previous: action.payload.has_previous,
+        total_items: action.payload.total_items,
       };
 
     case ORDER_LIST_FAIL:
       return {
         loading: false,
         error: action.payload,
+      };
+    default:
+      return state;
+  }
+};
+
+export const listVesselSchedules = (state = { vessels: [] }, action) => {
+  switch (action.type) {
+    case VESSEL_SCHEDULE_REQUEST:
+      return {
+        loading: true,
+      };
+
+    case VESSEL_SCHEDULE_SUCCESS:
+      return {
+        loading: false,
+        vessels: action.payload,
+      };
+
+    case VESSEL_SCHEDULE_FAIL:
+      return {
+        loading: false,
+        error: action.payload,
+      };
+    case "FETCH_DATA_ERROR":
+    case "FETCH_DATA_ERROR_400":
+      return {
+        ...state,
+        error: action.payload,
+        loading: false,
       };
     default:
       return state;

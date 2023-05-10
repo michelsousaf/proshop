@@ -13,6 +13,9 @@ from django.db.models import Q
 
 from rest_framework import status
 from datetime import datetime
+import requests
+from urllib.parse import urlencode
+
 
 
 @api_view(['POST'])
@@ -89,7 +92,7 @@ def getOrders(request):
 
     orders = Order.objects.filter(
         Q(user_id__in=User.objects.filter(email__contains=query)) |
-        Q(_id__icontains=query)).order_by('-createdAt')
+        Q(_id__icontains=query)).order_by('-_id')
     
         
 
@@ -108,15 +111,33 @@ def getOrders(request):
         page = 1
 
     page = int(page)
-    print('Page:', page)
+    print('Filters:',request.headers.get('Filters'))
     serializer = OrderSerializer(orders, many=True)
-    return Response({'orders': serializer.data, 'page': page, 'pages': paginator.num_pages, 'has_next': page_items.has_next(),'has_previous': page_items.has_previous(), 'total_pages': paginator.num_pages})
-
-    # return Response(serializer.data)
+    return Response({'orders': serializer.data, 'page': page, 'pages': paginator.num_pages, 'has_next': page_items.has_next(),'has_previous': page_items.has_previous(), 'total_pages': paginator.num_pages,'total_items': paginator.count})
 
 
 
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def getVesselSchedules(request):
 
+
+    try:
+        params = {'vesselIMONumber': '9332999', 'dateRange': 'P4W', 'carrierCodes': 'MAEU'}
+        url = 'https://api.maersk.com/schedules/vessel-schedules?' + urlencode(params)
+        headers = {'Content-Type': 'application/json', 'Consumer-Key': '0nUULc9nMtJWGbrean2Asez3fWeIqkEf'}
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+             return Response({'detail': 'No schedudle'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+        vesselsSchedules = response.json()
+        print(response)
+        return Response(vesselsSchedules)
+    except requests.exceptions.RequestException as e:
+        # Catch any exceptions that occur when calling the API
+        return Response({'detail': 'No schedudle'}, status=status.HTTP_400_BAD_REQUEST)
+        # return JsonResponse({'error': str(e)}, status=500)
 
 
 @api_view(['GET'])

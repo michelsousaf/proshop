@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Loader from "../components/Loader";
 import Message from "../components/Message";
 import Paginate from "../components/Paginate";
+
 import {
   listProducts,
   deleteProduct,
@@ -32,8 +33,6 @@ function ProductListScreen({ history, match }) {
     success: successCreate,
     product: createdProduct,
   } = productCreate;
-
-  console.log(history);
 
   const userLogin = useSelector((state) => state.userLogin);
   const { userInfo } = userLogin;
